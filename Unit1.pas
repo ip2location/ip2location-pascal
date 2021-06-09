@@ -5,8 +5,8 @@
 //    functions of IP2Location library in     //
 //                     a GUI                  //
 //                                            //
-//      Coded by:    DeadC0der                //
-//              DeadC0der7@gmail.com          //
+//      Coded by:    IP2Location              //
+//           support@ip2location.com          //
  /////////////////////////////////////////////
 
 unit Unit1;
@@ -74,11 +74,12 @@ begin
 grp2.Enabled:=rg1.Enabled;
 stat1.Panels[0].Text:=Format('Database Date:%0.2d/%0.2d/%0.2d',[Ip2Loc.databaseday,Ip2Loc.databasemonth,Ip2Loc.databaseyear]);
 stat1.Panels[1].Text:=Format('Database Count:%d',[Ip2Loc.databasecount]);
-if Ip2Loc.ipversion=0 then
+if Ip2Loc.ipv6databasecount=0 then
 begin
 stat1.Panels[2].Text:='IP Version:IPV4';
 edt2.Text:='127.0.0.1';
-KeysSet:=['0'..'9','.',#13,#8];
+{ KeysSet:=['0'..'9','.',#13,#8]; }
+KeysSet:=['0'..'9','A'..'F','a'..'f',':','.',#13,#8];
 end
 else
 begin
@@ -141,11 +142,17 @@ if not( Key in KeysSet) then
        SubItems.Add(isp);
        SubItems.Add(domain);
        SubItems.Add(netspeed);
+       SubItems.Add(iddcode);
        SubItems.Add(areacode);
+       SubItems.Add(weatherstationcode);
        SubItems.Add(weatherstationname);
+       SubItems.Add(mcc);
+       SubItems.Add(mnc);
        SubItems.Add(mobilebrand);
        SubItems.Add(FloatToStr(elevation));
        SubItems.Add(usagetype);
+       SubItems.Add(addresstype);
+       SubItems.Add(category);
       end;
    except
 

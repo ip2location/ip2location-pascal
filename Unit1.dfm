@@ -3,7 +3,7 @@ object Form1: TForm1
   Top = 265
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'IP2Location DEMO | DeadC0der - DeadC0der7@gmail.com |'
+  Caption = 'IP2Location DEMO | IP2Location - support@ip2location.com |'
   ClientHeight = 323
   ClientWidth = 550
   Color = clBtnFace
@@ -163,7 +163,23 @@ object Form1: TForm1
           Width = 100
         end
         item
-          Caption = 'Weather'
+          Caption = 'IDD code'
+          Width = 100
+        end
+        item
+          Caption = 'Weather Station Code'
+          Width = 100
+        end
+        item
+          Caption = 'Weather Station Name'
+          Width = 100
+        end
+        item
+          Caption = 'MCC'
+          Width = 100
+        end
+        item
+          Caption = 'MNC'
           Width = 100
         end
         item
@@ -172,9 +188,19 @@ object Form1: TForm1
         end
         item
           Caption = 'Elevation'
+          Width = 100
         end
         item
           Caption = 'Usage type'
+          Width = 100
+        end
+        item
+          Caption = 'Address type'
+          Width = 100
+        end
+        item
+          Caption = 'Category'
+          Width = 100
         end>
       GridLines = True
       RowSelect = True
