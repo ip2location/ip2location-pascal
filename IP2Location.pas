@@ -646,14 +646,19 @@ end;
 // Description: Open the IP2Location database file
 function IP2Location_open(db:PChar):TIP2Location;
 var f:integer;
-var loc:TIP2Location;
+    loc:TIP2Location;
 begin
+FillChar(loc, SizeOf(TIP2Location), #0);
+
+Result := loc;
+
 f:=FileOpen(db,fmOpenRead);
 if f <> INVALID_HANDLE_VALUE then
 	begin
-	result.filehandle:=f;
-	IP2Location_initialize(result);
+	loc.filehandle:=f;
+	IP2Location_initialize(loc);
 	if loc.productcode = 1 then
+    Result := loc
 	else
 		if ((loc.databaseyear <= 20) and (loc.productcode = 0)) then
 			begin
