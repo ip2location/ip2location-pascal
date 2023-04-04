@@ -1,7 +1,7 @@
  ////////////////////////////////////////////////
 // Unit      : IP2Location.pas                  //
-// Version   : 8.1.0                            //
-// Date      : June 2021                        //
+// Version   : 8.2.0                            //
+// Date      : April 2023                        //
 // Translator: IP2Location                      //
 // Email     : support@ip2location.com          //
 // License   : MIT                              //
@@ -14,33 +14,36 @@ interface
 uses Windows,SysUtils,IP2Loc_DBInterface;
 
 const
- API_VERSION			= '8.1.0';
+ API_VERSION			= '8.2.0';
  MAX_IPV4_RANGE			= 4294967295;
  MAX_IPV6_RANGE			= '340282366920938463463374607431768211455';
  IPV4					= 0;
  IPV6					= 1;
- _COUNTRYSHORT			= $000001;
- _COUNTRYLONG			= $000002;
- _REGION 				= $000004;
- _CITY					= $000008;
- _ISP					= $000010;
- _LATITUDE 				= $000020;
- _LONGITUDE				= $000040;
- _DOMAIN 				= $000080;
- _ZIPCODE				= $000100;
- _TIMEZONE				= $000200;
- _NETSPEED				= $000400;
- _IDDCODE				= $000800;
- _AREACODE				= $001000;
- _WEATHERSTATIONCODE	= $002000;
- _WEATHERSTATIONNAME	= $004000;
- _MCC					= $008000;
- _MNC					= $010000;
- _MOBILEBRAND			= $020000;
- _ELEVATION				= $040000;
- _USAGETYPE				= $080000;
- _ADDRESSTYPE			= $100000;
- _CATEGORY				= $200000;
+ _COUNTRYSHORT			= $0000001;
+ _COUNTRYLONG			= $0000002;
+ _REGION 				= $0000004;
+ _CITY					= $0000008;
+ _ISP					= $0000010;
+ _LATITUDE 				= $0000020;
+ _LONGITUDE				= $0000040;
+ _DOMAIN 				= $0000080;
+ _ZIPCODE				= $0000100;
+ _TIMEZONE				= $0000200;
+ _NETSPEED				= $0000400;
+ _IDDCODE				= $0000800;
+ _AREACODE				= $0001000;
+ _WEATHERSTATIONCODE	= $0002000;
+ _WEATHERSTATIONNAME	= $0004000;
+ _MCC					= $0008000;
+ _MNC					= $0010000;
+ _MOBILEBRAND			= $0020000;
+ _ELEVATION				= $0040000;
+ _USAGETYPE				= $0080000;
+ _ADDRESSTYPE			= $0100000;
+ _CATEGORY				= $0200000;
+ _DISTRICT				= $0400000;
+ _ASN     				= $0800000;
+ _AS      				= $1000000;
  _ALL					= _COUNTRYSHORT			or
 						 _COUNTRYLONG			or
 						 _REGION				or
@@ -62,7 +65,10 @@ const
 						 _ELEVATION				or
 						 _USAGETYPE				or
 						 _ADDRESSTYPE			or
-						 _CATEGORY;
+						 _CATEGORY				or
+						 _DISTRICT				or
+						 _ASN					or
+						 _AS;
  DEFAULT					= $0001;
  NO_EMPTY_STRING			= $0002;
  NO_LEADING					= $0004;
@@ -121,6 +127,9 @@ type
 	usagetype:PChar;
 	addresstype:PChar;
 	category:PChar;
+	district:PChar;
+	asn:PChar;
+	asname:PChar;
   end;
   TIP2LocationRecord = _IP2LocationRecord;
 
@@ -151,6 +160,9 @@ function  IP2Location_get_country_elevation(loc:TIP2Location;ip:PChar):TIP2Locat
 function  IP2Location_get_country_usagetype(loc:TIP2Location;ip:PChar):TIP2LocationRecord;
 function  IP2Location_get_country_addresstype(loc:TIP2Location;ip:PChar):TIP2LocationRecord;
 function  IP2Location_get_country_category(loc:TIP2Location;ip:PChar):TIP2LocationRecord;
+function  IP2Location_get_country_district(loc:TIP2Location;ip:PChar):TIP2LocationRecord;
+function  IP2Location_get_country_asn(loc:TIP2Location;ip:PChar):TIP2LocationRecord;
+function  IP2Location_get_country_asname(loc:TIP2Location;ip:PChar):TIP2LocationRecord;
 function  IP2Location_get_country_all(loc:TIP2Location;ip:PChar):TIP2LocationRecord;
 
 implementation
@@ -159,27 +171,30 @@ uses WinSock,Classes,Math;
 
 const
 
- COUNTRY_POSITION			:array [0..25] of byte   =(0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2);
- REGION_POSITION			:array [0..25] of byte   =(0,0,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3);
- CITY_POSITION				:array [0..25] of byte   =(0,0,0,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4);
- LATITUDE_POSITION			:array [0..25] of byte   =(0,0,0,0,0,5,5,0,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5);
- LONGITUDE_POSITION			:array [0..25] of byte   =(0,0,0,0,0,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6);
- ZIPCODE_POSITION			:array [0..25] of byte   =(0,0,0,0,0,0,0,0,0,7,7,7,7,0,7,7,7,0,7,0,7,7,7,0,7,7);
- TIMEZONE_POSITION			:array [0..25] of byte   =(0,0,0,0,0,0,0,0,0,0,0,8,8,7,8,8,8,7,8,0,8,8,8,0,8,8);
- ISP_POSITION				:array [0..25] of byte   =(0,0,3,0,5,0,7,5,7,0,8,0,9,0,9,0,9,0,9,7,9,0,9,7,9,9);
- DOMAIN_POSITION			:array [0..25] of byte   =(0,0,0,0,0,0,0,6,8,0,9,0,10,0,10,0,10,0,10,8,10,0,10,8,10,10);
- NETSPEED_POSITION			:array [0..25] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,8,11,0,11,8,11,0,11,0,11,0,11,11);
- IDDCODE_POSITION			:array [0..25] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,12,0,12,0,12,9,12,0,12,12);
- AREACODE_POSITION			:array [0..25] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10 ,13 ,0,13,0,13,10,13,0,13,13);
- WEATHERSTATIONCODE_POSITION:array [0..25] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,14,0,14,0,14,0,14,14);
- WEATHERSTATIONNAME_POSITION:array [0..25] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,15,0,15,0,15,0,15,15);
- MCC_POSITION				:array [0..25] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,16,0,16,9,16,16);
- MNC_POSITION				:array [0..25] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,17,0,17,10,17,17);
- MOBILEBRAND_POSITION		:array [0..25] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,18,0,18,11,18,18);
- ELEVATION_POSITION			:array [0..25] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,19,0,19,19);
- USAGETYPE_POSITION			:array [0..25] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,20,20);
- ADDRESSTYPE_POSITION		:array [0..25] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,21);
- CATEGORY_POSITION			:array [0..25] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22);
+ COUNTRY_POSITION			:array [0..26] of byte   =(0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2);
+ REGION_POSITION			:array [0..26] of byte   =(0,0,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3);
+ CITY_POSITION				:array [0..26] of byte   =(0,0,0,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4);
+ LATITUDE_POSITION			:array [0..26] of byte   =(0,0,0,0,0,5,5,0,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5);
+ LONGITUDE_POSITION			:array [0..26] of byte   =(0,0,0,0,0,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6);
+ ZIPCODE_POSITION			:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,7,7,7,7,0,7,7,7,0,7,0,7,7,7,0,7,7,7);
+ TIMEZONE_POSITION			:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,8,8,7,8,8,8,7,8,0,8,8,8,0,8,8,8);
+ ISP_POSITION				:array [0..26] of byte   =(0,0,3,0,5,0,7,5,7,0,8,0,9,0,9,0,9,0,9,7,9,0,9,7,9,9,9);
+ DOMAIN_POSITION			:array [0..26] of byte   =(0,0,0,0,0,0,0,6,8,0,9,0,10,0,10,0,10,0,10,8,10,0,10,8,10,10,10);
+ NETSPEED_POSITION			:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,8,11,0,11,8,11,0,11,0,11,0,11,11,11);
+ IDDCODE_POSITION			:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,12,0,12,0,12,9,12,0,12,12,12);
+ AREACODE_POSITION			:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10 ,13 ,0,13,0,13,10,13,0,13,13,13);
+ WEATHERSTATIONCODE_POSITION:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,14,0,14,0,14,0,14,14,14);
+ WEATHERSTATIONNAME_POSITION:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,15,0,15,0,15,0,15,15,15);
+ MCC_POSITION				:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,16,0,16,9,16,16,16);
+ MNC_POSITION				:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,17,0,17,10,17,17,17);
+ MOBILEBRAND_POSITION		:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,18,0,18,11,18,18,18);
+ ELEVATION_POSITION			:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,19,0,19,19,19);
+ USAGETYPE_POSITION			:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,20,20,20);
+ ADDRESSTYPE_POSITION		:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,21,21);
+ CATEGORY_POSITION			:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,22);
+ DISTRICT_POSITION			:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23);
+ ASN_POSITION				:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,24);
+ AS_POSITION				:array [0..26] of byte   =(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25);
 
  AF_INET6 = 23;
 
@@ -232,8 +247,8 @@ begin
 	loc.ipv6databaseaddr  := IP2Location_read32(loc.filehandle, 18);
 	loc.ipv4indexbaseaddr := IP2Location_read32(loc.filehandle, 22);
 	loc.ipv6indexbaseaddr := IP2Location_read32(loc.filehandle, 26);
-	loc.productcode       := IP2Location_read32(loc.filehandle, 30);
-	loc.licensecode       := IP2Location_read32(loc.filehandle, 31);
+	loc.productcode       := IP2Location_read8(loc.filehandle, 30);
+	loc.licensecode       := IP2Location_read8(loc.filehandle, 31);
 	loc.databasesize      := IP2Location_read32(loc.filehandle, 32);
 	result:=0;
 end;
@@ -375,6 +390,9 @@ result.elevation := 0;
 result.usagetype:=aMessage;
 result.addresstype:=aMessage;
 result.category:=aMessage;
+result.district:=aMessage;
+result.asn:=aMessage;
+result.asname:=aMessage;
 end;
 
 function IP2Location_get_record(loc:TIP2Location;ipstring:PChar;mode:Cardinal):TIP2LocationRecord;
@@ -641,6 +659,24 @@ if ((mode and _CATEGORY>0) and (CATEGORY_POSITION[dbtype] <> 0)) then
 	result.category := IP2Location_readStr(handle, IP2Location_read32(handle, rowaddr + 4 * (CATEGORY_POSITION[dbtype]-1)))
 else
 	result.category := NOT_SUPPORTED;
+
+
+if ((mode and _DISTRICT>0) and (DISTRICT_POSITION[dbtype] <> 0)) then
+	result.district := IP2Location_readStr(handle, IP2Location_read32(handle, rowaddr + 4 * (DISTRICT_POSITION[dbtype]-1)))
+else
+	result.district := NOT_SUPPORTED;
+
+
+if ((mode and _ASN>0) and (ASN_POSITION[dbtype] <> 0)) then
+	result.asn := IP2Location_readStr(handle, IP2Location_read32(handle, rowaddr + 4 * (ASN_POSITION[dbtype]-1)))
+else
+	result.asn := NOT_SUPPORTED;
+
+
+if ((mode and _AS>0) and (AS_POSITION[dbtype] <> 0)) then
+	result.asname := IP2Location_readStr(handle, IP2Location_read32(handle, rowaddr + 4 * (AS_POSITION[dbtype]-1)))
+else
+	result.asname := NOT_SUPPORTED;
 end;
 
 // Description: Open the IP2Location database file
@@ -832,6 +868,24 @@ end;
 function IP2Location_get_country_category(loc:TIP2Location;ip:PChar):TIP2LocationRecord;
 begin
 result:=IP2Location_get_record(loc,ip,_CATEGORY);
+end;
+
+// Description: Get district
+function IP2Location_get_country_district(loc:TIP2Location;ip:PChar):TIP2LocationRecord;
+begin
+result:=IP2Location_get_record(loc,ip,_DISTRICT);
+end;
+
+// Description: Get asn
+function IP2Location_get_country_asn(loc:TIP2Location;ip:PChar):TIP2LocationRecord;
+begin
+result:=IP2Location_get_record(loc,ip,_ASN);
+end;
+
+// Description: Get as
+function IP2Location_get_country_asname(loc:TIP2Location;ip:PChar):TIP2LocationRecord;
+begin
+result:=IP2Location_get_record(loc,ip,_AS);
 end;
 
 // Description: Get all records

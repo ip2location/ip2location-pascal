@@ -1,7 +1,7 @@
  ////////////////////////////////////////////////
 // Unit      : IP2Loc_DBInterface.pas           //
-// Version   : 8.1.0                            //
-// Date      : June 2021                        //
+// Version   : 8.2.0                            //
+// Date      : April 2023                        //
 // Translator: IP2Location                      //
 // Email     : support@ip2location.com          //
 // License   : MIT                              //
@@ -131,7 +131,7 @@ begin
       if (DB_access_type = IP2LOCATION_FILE_IO) and (handle <> 0) then
        begin
         FileSeek(handle,position-1,0);
-      FileRead(handle,result,1);
+        FileRead(handle,result,1);
        end
       else
       result:=PByteArray(cache_shm_ptr)^[position-1];
@@ -143,7 +143,7 @@ begin
  if (DB_access_type = IP2LOCATION_FILE_IO) and (handle <> 0) then
      begin
       FileSeek(handle,position-1,0);
-    FileRead(handle,byte1,1);
+      FileRead(handle,byte1,1);
       FileRead(handle,byte2,1);
       FileRead(handle,byte3,1);
       FileRead(handle,byte4,1);
@@ -155,7 +155,7 @@ begin
       byte3:=PByteArray(cache_shm_ptr)^[position+1];
       byte4:=PByteArray(cache_shm_ptr)^[position+2];
      end;
-    result:= (byte4 shl 24) or (byte3 shl 16) or (byte2 shl 8) or byte1;  
+    result:= (byte4 shl 24) or (byte3 shl 16) or (byte2 shl 8) or byte1;
   end;
 
 function IP2Location_readStr(handle:integer;position:cardinal):PChar;

@@ -201,6 +201,18 @@ object Form1: TForm1
         item
           Caption = 'Category'
           Width = 100
+        end
+        item
+          Caption = 'District'
+          Width = 100
+        end
+        item
+          Caption = 'ASN'
+          Width = 100
+        end
+        item
+          Caption = 'AS'
+          Width = 100
         end>
       GridLines = True
       RowSelect = True

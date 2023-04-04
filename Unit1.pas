@@ -153,6 +153,9 @@ if not( Key in KeysSet) then
        SubItems.Add(usagetype);
        SubItems.Add(addresstype);
        SubItems.Add(category);
+       SubItems.Add(district);
+       SubItems.Add(asn);
+       SubItems.Add(asname);
       end;
    except
 

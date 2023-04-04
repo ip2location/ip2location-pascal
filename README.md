@@ -1,6 +1,6 @@
 # IP2Location Pascal Library
 
-This is a IP2Location Pascal Library that enables the user to find the country, region or state, city, latitude and longitude, US ZIP code, time zone, Internet Service Provider (ISP) or company name, domain name, net speed, area code, weather station code, weather station name, mobile country code (MCC), mobile network code (MNC) and carrier brand, elevation, usage type, IP address type and IAB advertising category from IP address using IP2Location database. The library reads the geo location information from **IP2Location BIN data** file.
+This is a IP2Location Pascal Library that enables the user to find the country, region or state, district, city, latitude and longitude, ZIP/Postal code, time zone, Internet Service Provider (ISP) or company name, domain name, net speed, area code, weather station code, weather station name, mobile country code (MCC), mobile network code (MNC) and carrier brand, elevation, usage type, address type, IAB category and ASN from IP address using IP2Location database. The library reads the geo location information from **IP2Location BIN data** file.
 
 Supported IPv4 and IPv6 address.
 
@@ -21,5 +21,5 @@ For more details, please visit:
 * Use the IPv6 BIN file if you need to query BOTH IPv4 and IPv6 addresses.
 
 # Support
-Email: support@ip2location.com.
+Email: support@ip2location.com  
 URL: [https://www.ip2location.com](https://www.ip2location.com)

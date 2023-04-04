@@ -1,3 +1,5 @@
-8.0.0 Support Index BIN
+8.2.0 Added support for district, ASN and AS.
 
-8.1.0 Added supports for address type and category fields. Added exception handling for incorrect BIN database.
+8.1.0 Added support for address type and category fields. Added exception handling for incorrect BIN database.
+
+8.0.0 Support Index BIN.
