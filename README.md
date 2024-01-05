@@ -7,10 +7,8 @@ Supported IPv4 and IPv6 address.
 For more details, please visit:
 [https://www.ip2location.com/developers/pascal](https://www.ip2location.com/developers/pascal)
 
-# Installation
-1. Download pascal library and IP2Location database.
-2. Decompress the pascal library.
-3. Run the sample code provided inside the file.
+## Developer Documentation
+To learn more about installation, usage, and code examples, please visit the developer documentation at [https://ip2location-pascal.readthedocs.io/en/latest/index.html.](https://ip2location-pascal.readthedocs.io/en/latest/index.html)
 
 # Sample BIN Databases
 * Download free IP2Location LITE databases at [https://lite.ip2location.com](https://lite.ip2location.com)
